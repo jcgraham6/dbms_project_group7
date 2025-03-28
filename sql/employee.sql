@@ -32,7 +32,7 @@ CREATE TABLE work_record (
     type VARCHAR(10),
     device VARCHAR(10),
     PRIMARY KEY (ssn, work_date),
-    FOREIGN KEY (ssn) REFERENCES employee(ssn)
+    FOREIGN KEY (ssn) REFERENCES employee(ssn) on delete cascade
 );
 
 CREATE TABLE custodian (
