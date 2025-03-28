@@ -14,7 +14,7 @@ CREATE TABLE member (
     startDate date,
     expDate date,
     loyaltyPoints decimal(10,2),
-    primary key (custID)
+    primary key (custID),
     foreign key (custID) references customer(custID)
 );
 
@@ -27,12 +27,12 @@ CREATE TABLE cart(
     foreign key (custID) references customer(custID) on delete cascade
 );
 
-CREATE TABLE order(
+CREATE TABLE orders(
     orderID varchar(10),
     order_date date,
     delivery_type varchar(10),
     primary key (orderID)
-)
+);
 
 CREATE TABLE order_items(
     orderID varchar(10),
@@ -40,8 +40,8 @@ CREATE TABLE order_items(
     quantity int,
     name varchar(50),
     primary key (orderID, commodityID),
-    foreign key (orderID) references order(orderID) on delete cascade
-)
+    foreign key (orderID) references orders(orderID) on delete cascade
+);
 
 CREATE TABLE payment_regist(
     custID varchar(10),
@@ -49,7 +49,7 @@ CREATE TABLE payment_regist(
     card_type varchar(10),
     primary key (custID, cardID),
     foreign key (custID) references customer(custID) on delete cascade
-)
+);
 
 CREATE TABLE paid(
     custID varchar(10),
@@ -58,8 +58,8 @@ CREATE TABLE paid(
     pay_status varchar(10),
     primary key (custID, cardID, orderID),
     foreign key (custID, cardID) references payment_regist(custID, cardID),
-    foreign key (orderID) references order(orderID)
-)
+    foreign key (orderID) references orders(orderID)
+);
 
 CREATE TABLE checkout(
     custID varchar(10),
@@ -67,5 +67,5 @@ CREATE TABLE checkout(
     date_shipped date,
     primary key (custID, orderID),
     foreign key (custID) references customer(custID),
-    foreign key (orderID) references order(orderID)
+    foreign key (orderID) references orders(orderID)
 );
