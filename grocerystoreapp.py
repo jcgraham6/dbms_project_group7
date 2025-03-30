@@ -31,7 +31,7 @@ def fetch_data(sql, params = None):
         data = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description] # Extract column names
         df = pd.DataFrame(data, columns=columns) # Create dataframe
-        cursor.close() # Close connectino
+        cursor.close() # Close connection
 
         return df
 
