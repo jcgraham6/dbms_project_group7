@@ -96,7 +96,7 @@ def add_to_cart():
                 product_in_cart = True
                 break
         
-        # If product is not in cart, add it
+        # Add if not in cart
         if not product_in_cart:
             cart.append({
                 'name': product_name,
@@ -104,11 +104,11 @@ def add_to_cart():
                 'quantity': product_quantity
             })
 
-        # Save the updated cart to the session
+        # Save session
         session['cart'] = cart
         session.modified = True
 
-        # Redirect to the cart page
+        # Refresh page
         return redirect(url_for('cart'))
 
     except KeyError as e:
@@ -118,38 +118,36 @@ def add_to_cart():
 
 @app.route('/remove_from_cart', methods=['POST'])
 def remove_from_cart():
-    # Get the product name to remove
+
+    # Product to remove
     product_name = request.form['product_name']
     
-    # Retrieve the cart from the session
+    # Get the cart from the session
     cart = session.get('cart', [])
 
-    # Remove the product from the cart if it exists
+    # Remove item from cart if it exists
     cart = [item for item in cart if item['name'] != product_name]
 
-    # Save the updated cart to the session
+    # Save
     session['cart'] = cart
     session.modified = True
 
-    # Redirect back to the cart page
+    # Refresh page
     return redirect(url_for('cart'))
 
 @app.route('/clear_cart', methods=['POST'])
 def clear_cart():
+
     # Clear the cart
     session['cart'] = []
 
-    # Redirect back to the cart page
+    # Refresh page
     return redirect(url_for('cart'))
-
-
 
 @app.route('/cart', methods=['GET'])
 def cart():
-    # Get the cart from the session
-    cart = session.get('cart', [])
     
-    # Render the cart page and pass the cart data to the template
+    cart = session.get('cart', [])
     return render_template('Cart.html', cart=cart)
 
 
