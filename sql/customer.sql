@@ -1,3 +1,26 @@
+DROP TABLE non_member;
+DROP TABLE member;
+DROP TABLE orders;
+DROP TABLE order_items;
+DROP TABLE Paid;
+DROP TABLE checkout;
+DROP TABLE Return_Request;
+DROP TABLE customer;
+DROP TABLE cart;
+DROP TABLE payment_regist;
+DROP TABLE Review;
+DROP TABLE Account;
+DROP TABLE Subscription;
+DROP TABLE Preferences;
+DROP TABLE Messages;
+DROP TABLE Message_Type;
+DROP TABLE browse;
+DROP TABLE setup;
+DROP TABLE leaves;
+DROP TABLE login;
+DROP TABLE sets;
+DROP TABLE opt_in;
+
 CREATE TABLE customer (
     custID varchar(50),
     primary key (custID)
@@ -27,11 +50,12 @@ CREATE TABLE cart(
     foreign key (custID) references customer(custID) on delete cascade
 );
 
-CREATE TABLE orders(
-    orderID varchar(10),
-    order_date date,
-    delivery_type varchar(10)CHECK (delivery_type IN ('standard', 'express', 'pickup')),
-    primary key (orderID)
+CREATE TABLE orders (
+    orderID VARCHAR(10) PRIMARY KEY,
+    order_date DATE,
+    delivery_type VARCHAR(10) CHECK (delivery_type IN ('standard', 'express', 'pickup')),
+    total_price DECIMAL(10, 2),
+    orderstatus VARCHAR(20) DEFAULT 'Pending'
 );
 
 CREATE TABLE order_items(
@@ -208,11 +232,21 @@ INSERT INTO cart (custID, commodityID, quantity, add_date) VALUES ('CUST006', '1
 INSERT INTO cart (custID, commodityID, quantity, add_date) VALUES ('CUST002', '104', 1, TO_DATE('2023-11-23', 'YYYY-MM-DD'));
 INSERT INTO cart (custID, commodityID, quantity, add_date) VALUES ('CUST003', '105', 2, TO_DATE('2023-11-24', 'YYYY-MM-DD'));
 
-INSERT INTO orders (orderID, order_date, delivery_type) VALUES ('ORD001', TO_DATE('2023-11-22', 'YYYY-MM-DD'), 'standard');
-INSERT INTO orders (orderID, order_date, delivery_type) VALUES ('ORD002', TO_DATE('2023-11-23', 'YYYY-MM-DD'), 'express');
-INSERT INTO orders (orderID, order_date, delivery_type) VALUES ('ORD003', TO_DATE('2023-11-24', 'YYYY-MM-DD'), 'pickup');
-INSERT INTO orders (orderID, order_date, delivery_type) VALUES ('ORD004', TO_DATE('2023-11-25', 'YYYY-MM-DD'), 'standard');
-INSERT INTO orders (orderID, order_date, delivery_type) VALUES ('ORD005', TO_DATE('2023-11-26', 'YYYY-MM-DD'), 'express');
+INSERT INTO orders (orderID, order_date, delivery_type, total_price, orderstatus)
+VALUES ('ORD001', TO_DATE('2023-11-22', 'YYYY-MM-DD'), 'standard', 50.00, 'Processing');
+
+INSERT INTO orders (orderID, order_date, delivery_type, total_price, orderstatus)
+VALUES ('ORD002', TO_DATE('2023-11-23', 'YYYY-MM-DD'), 'express', 120.50, 'Shipped');
+
+INSERT INTO orders (orderID, order_date, delivery_type, total_price, orderstatus)
+VALUES ('ORD003', TO_DATE('2023-11-24', 'YYYY-MM-DD'), 'pickup', 35.75, 'Delivered');
+
+INSERT INTO orders (orderID, order_date, delivery_type, total_price, orderstatus)
+VALUES ('ORD004', TO_DATE('2023-11-25', 'YYYY-MM-DD'), 'standard', 80.20, 'Pending');
+
+INSERT INTO orders (orderID, order_date, delivery_type, total_price, orderstatus)
+VALUES ('ORD005', TO_DATE('2023-11-26', 'YYYY-MM-DD'), 'express', 200.00, 'Processing');
+
 
 INSERT INTO order_items (orderID, commodityID, quantity, name) VALUES ('ORD001', '101', 2, 'Product A');
 INSERT INTO order_items (orderID, commodityID, quantity, name) VALUES ('ORD002', '102', 1, 'Product B');
@@ -315,3 +349,77 @@ INSERT INTO opt_in (custID, messageID) VALUES ('CUST006', 2);
 INSERT INTO opt_in (custID, messageID) VALUES ('CUST002', 3);
 INSERT INTO opt_in (custID, messageID) VALUES ('CUST003', 4);
 INSERT INTO opt_in (custID, messageID) VALUES ('CUST006', 5);
+
+CREATE OR REPLACE TRIGGER update_order_total
+AFTER INSERT OR UPDATE ON Order_Items
+FOR EACH ROW
+BEGIN
+    UPDATE Orders
+    SET total_price = (
+        SELECT SUM(oi.quantity * p.price)
+        FROM Order_Items oi
+        JOIN Commodity_Store p ON oi.commodityID = p.commodityID
+        WHERE oi.orderID = :NEW.orderID
+    )
+    WHERE orderID = :NEW.orderID;
+END;
+/
+
+CREATE OR REPLACE TRIGGER reduce_commodity_store_quantity
+AFTER INSERT ON Order_Items
+FOR EACH ROW
+BEGIN
+    UPDATE commodity_store
+    SET quantity = quantity - :NEW.quantity
+    WHERE commodityID = :NEW.commodityID;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Commodity ' || :NEW.commodityID || ' not found in commodity_store.');
+END;
+/
+
+CREATE OR REPLACE TRIGGER update_loyalty_points
+AFTER INSERT ON Paid
+FOR EACH ROW
+DECLARE
+    v_total_price DECIMAL(10, 2);
+    v_loyalty_points NUMBER;
+BEGIN
+    SELECT total_price INTO v_total_price
+    FROM Orders
+    WHERE orderID = :NEW.orderID;
+    v_loyalty_points := FLOOR(v_total_price / 10);
+    UPDATE Member
+    SET loyaltyPoints = loyaltyPoints + v_loyalty_points
+    WHERE custID = :NEW.custID;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Order or Member not found.');
+END;
+/
+
+INSERT INTO Customer (custID)
+VALUES ('TESTMEM1');
+
+
+INSERT INTO Member (custID, startDate, expDate, loyaltyPoints)
+VALUES ('TESTMEM1', TO_DATE('2023-01-01', 'YYYY-MM-DD'), TO_DATE('2024-01-01', 'YYYY-MM-DD'), 100);
+
+INSERT INTO Orders (orderID, order_date, delivery_type, total_price, orderstatus)
+VALUES ('TESTORD1', TO_DATE('2023-12-05', 'YYYY-MM-DD'), 'standard', 50.00, 'Processing');
+
+INSERT INTO Payment_Regist (custID, cardID, card_type)
+VALUES ('TESTMEM1', 'CARDTEST', 'VISA');
+INSERT INTO Payment_Regist (custID, cardID, card_type)
+VALUES ('TESTMEM1', 'CARDTEST2', 'VISA');
+
+INSERT INTO Paid (custID, cardID, orderID, pay_status)
+VALUES ('TESTMEM1', 'CARDTEST', 'TESTORD1', 'SUCCESS');
+
+SELECT loyaltyPoints FROM Member WHERE custID = 'TESTMEM1';
+
+INSERT INTO Paid (custID, cardID, orderID, pay_status)
+VALUES ('TESTMEM1', 'CARDTEST2', 'TESTORD1', 'SUCCESS');
+
+INSERT INTO Paid (custID, cardID, orderID, pay_status)
+VALUES ('TESTMEM1', 'CARDTEST3', 'NON', 'SUCCESS');
