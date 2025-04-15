@@ -55,6 +55,7 @@ def insert_data(sql, data):
                
     except cx_Oracle.DatabaseError as e:
         raise
+        
 
 def update(sql, data):
     '''
