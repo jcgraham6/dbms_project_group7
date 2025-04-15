@@ -37,6 +37,43 @@ def fetch_data(sql, params = None):
 
     except oracledb.DatabaseError as e:
         raise
+        
+
+def insert_data(sql, data):
+    '''
+    Documentation: https://python-oracledb.readthedocs.io/en/latest/user_guide/batch_statement.html
+    '''
+
+    try:
+        con = connect_to_db()
+        cursor = con.cursor()
+
+        cursor.executemany(sql, data)
+
+        con.commit()
+        cursor.close()
+               
+    except cx_Oracle.DatabaseError as e:
+        raise
+
+def update(sql, data):
+    '''
+    Documentation: https://python-oracledb.readthedocs.io/en/latest/user_guide/batch_statement.html
+
+    '''
+    try:
+
+        con = connect_to_db()
+        cursor = con.cursor()
+
+        cursor.executemany(sql, data)
+
+        con.commit()
+        cursor.close()
+               
+    except cx_Oracle.DatabaseError as e:
+        raise
+        
 
 # Create instance
 app = Flask(__name__)
