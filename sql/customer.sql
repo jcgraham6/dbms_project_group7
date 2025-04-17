@@ -106,13 +106,16 @@ FOREIGN KEY (custID) REFERENCES customer(custID)
 );
 
 CREATE TABLE Review(
-reviewID NUMBER PRIMARY KEY,
-commodityID NUMBER,
-rating NUMBER NOT NULL,
-comment CLOB, 
-reviewDate DATE,
-FOREIGN KEY (commodityID) REFERENCES commodity_store(commodityID)
+  reviewID NUMBER PRIMARY KEY,
+  commodityID NUMBER,
+  custID VARCHAR(50),
+  rating NUMBER NOT NULL,
+  comment CLOB, 
+  reviewDate DATE,
+  FOREIGN KEY (commodityID) REFERENCES commodity_store(commodityID),
+  FOREIGN KEY (custID) REFERENCES member(custID)
 );
+
 
 CREATE TABLE Account(
 createDate DATE, 
@@ -201,6 +204,13 @@ messageID NUMBER,
 PRIMARY KEY(custID, messageID),
 FOREIGN KEY(custID) REFERENCES Member(custID),
 FOREIGN KEY(messageID) REFERENCES Messages(messageID)
+);
+
+CREATE TABLE contactus (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    message TEXT
 );
 
 INSERT INTO customer (custID) VALUES ('CUST001');
