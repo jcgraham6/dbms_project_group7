@@ -106,13 +106,16 @@ FOREIGN KEY (custID) REFERENCES customer(custID)
 );
 
 CREATE TABLE Review(
-reviewID NUMBER PRIMARY KEY,
-commodityID NUMBER,
-rating NUMBER NOT NULL,
-comment CLOB, 
-reviewDate DATE,
-FOREIGN KEY (commodityID) REFERENCES commodity_store(commodityID)
+  reviewID NUMBER PRIMARY KEY,
+  commodityID NUMBER,
+  custID VARCHAR(50),
+  rating NUMBER NOT NULL,
+  comment CLOB, 
+  reviewDate DATE,
+  FOREIGN KEY (commodityID) REFERENCES commodity_store(commodityID),
+  FOREIGN KEY (custID) REFERENCES member(custID)
 );
+
 
 CREATE TABLE Account(
 createDate DATE, 
