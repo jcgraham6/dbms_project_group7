@@ -203,6 +203,13 @@ FOREIGN KEY(custID) REFERENCES Member(custID),
 FOREIGN KEY(messageID) REFERENCES Messages(messageID)
 );
 
+CREATE TABLE contactus (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    message TEXT
+);
+
 INSERT INTO customer (custID) VALUES ('CUST001');
 INSERT INTO customer (custID) VALUES ('CUST002');
 INSERT INTO customer (custID) VALUES ('CUST003');
