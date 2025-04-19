@@ -128,63 +128,40 @@
         <div class="navbar">
             <div class="logo"><a href="#"></a></div>
             <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/empolyee/inventory_manager/inventory.html">Inventory</a></li>
-                <li><a href="/empolyee/inventory_manager/alert.html">Alert</a></li>
+                <li><a href="/employee/basic_info">Basic Info</a></li>
+                <li><a href="/employee/inventory_manager/inventory.html">Inventory</a></li>
+                <li><a href="/employee/inventory_manager/alert.html">Alert</a></li>
             </ul>
         </div>
     </nav>
 
-    <section class="hero">
-        <h3>Your daily source for fresh, local produce and quality groceries.</h3>
-        <a href="#" class="profile-icon"><i class="fas fa-user-circle"></i></a>
-    </section>
-
-    <h1>Items in Database</h1>
+    <h1>Alerts</h1>
     <table>
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Price ($)</th>
+                <th>Send Date     </th>
+                <th>CommodityID     </th>
+                <th>Description     </th>
+                <th>Inventory id     </th>
+                <th>Name     </th>
+                <th>Quantity     </th>
+                <th>Threshold     </th>
             </tr>
         </thead>
         <tbody>
             {% for item in items %}
             <tr>
-                <td>{{ item.id }}</td>
-                <td>{{ item.name }}</td>
-                <td>{{ "%.2f"|format(item.price) }}</td>
+                <td>{{ item[1] }}</td>
+                <td>{{ item[2] }}</td>
+                <td>{{ item[3] }}</td>
+                <td>{{ item[5] }}</td>
+                <td>{{ item[6] }}</td>
+                <td>{{ item[11] }}</td>
+                <td>{{ item[12] }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-
-    <section class="products">
-        <div class="deals">
-          <p>Current Deals!</p>
-        </div>
-        <div class="product">
-            <img src="https://assets.bonappetit.com/photos/57daf2c35a14a530086efae5/master/w_1600%2Cc_limit/undefined" alt="Green Apples">
-            <h3>Green Apples</h3>
-            <p>$2.00/lb</p>
-        </div>
-        <div class="product">
-            <img src="https://tinyurl.com/urabdacm" alt="Broccoli">
-            <h3>Broccoli</h3>
-            <p>$1.50/lb</p>
-        </div>
-        <div class="product">
-            <img src="https://www.kroger.com/product/images/large/front/0000000004225" alt="Avocado">
-            <h3>Avocado</h3>
-            <p>$0.99 each</p>
-        </div>
-        <div class="product">
-            <img src="https://www.kroger.com/product/images/large/front/0000000004225" alt="Avocado">
-            <h3>Avocado</h3>
-            <p>$0.99 each</p>
-        </div>
-    </section>
 
     <footer>
         <p>&copy; 2025 The Daily Pick. All Rights Reserved.</p>

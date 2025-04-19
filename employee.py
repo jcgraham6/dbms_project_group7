@@ -168,6 +168,26 @@ def inventory_lookup():
     conn.close()
     return render_template('/employee/inventory_manager/inventory.html', items=inventory_items)
 
+@app.route('/employee/inventory_manager/alert.html', methods=['GET'])
+def alert_lookup():
+    session['inventory_id'] = []
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    result = cursor.execute("select * from monitor where ssn=:ssn", [session['ssn']])
+    for row in result:
+        session['inventory_id'].append(row[1])
+    cursor.close()
+    # Fetch data from the corresponding inventory
+    alerts = []
+    cursor=conn.cursor()
+    for iid in session['inventory_id']:
+        result = cursor.execute("select * from inventory_alerts_send A join commodity_store B on A.commodityID = B.commodityID where B.iid = :id", [iid])
+        alerts = alerts + result.fetchall()
+    cursor.close()
+    conn.close()
+    print(alerts)
+    return render_template('/employee/inventory_manager/alert.html', items=alerts)
+
 if __name__ == '__main__':
     app.run(debug=True)
 
