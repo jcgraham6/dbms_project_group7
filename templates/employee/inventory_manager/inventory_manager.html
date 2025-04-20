@@ -131,6 +131,7 @@
                 <li><a href="/employee/basic_info">Basic Info</a></li>
                 <li><a href="/employee/inventory_manager/inventory.html">Inventory</a></li>
                 <li><a href="/employee/inventory_manager/alert.html">Alert</a></li>
+                <li><a href="/employee/work_record.html">Punch_Record</a></li>
             </ul>
         </div>
     </nav>
@@ -144,6 +145,20 @@
         </tr>
         {% endfor %}
     </table>
+
+    <h3>Punch In</h3>
+    <form action="/employee/punch_in" method="post">
+        <button type="submit" style="font-size: 12px; padding: 4px 8px;">
+            Punch In
+        </button>
+    </form>
+
+    <h3>Punch Out</h3>
+    <form action="/employee/punch_out" method="post">
+        <button type="submit" style="font-size: 12px; padding: 4px 8px;">
+            Punch Out
+        </button>
+    </form>
 
     <footer>
         <p>&copy; 2025 The Daily Pick. All Rights Reserved.</p>

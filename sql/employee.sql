@@ -193,57 +193,57 @@ BEGIN
 END;
 
 -- test oracle trigger
--- SELECT * FROM inventory_alerts_send;
+SELECT * FROM inventory_alerts_send;
 
--- INSERT INTO inventory(iid, location)
--- VALUES ('003', '123_MainSt');
+INSERT INTO inventory(iid, location)
+VALUES ('003', '123_MainSt');
 
--- INSERT INTO commodity_store(commodityID, name, price, category, discount, expDate, quantity, threshold, iid)
--- VALUES ('1234567890', 'bread', 4.46, 'bread', 1, SYSDATE + 30, 20, 20, '003');
+INSERT INTO commodity_store(commodityID, name, price, category, discount, expDate, quantity, threshold, iid)
+VALUES ('1234567890', 'bread', 4.46, 'bread', 1, SYSDATE + 30, 20, 20, '003');
 
--- UPDATE commodity_store
--- SET quantity = quantity - 1
--- WHERE commodityID = '1234567890';
+UPDATE commodity_store
+SET quantity = quantity - 1
+WHERE commodityID = '1234567890';
 
--- SELECT * FROM inventory_alerts_send;
+SELECT * FROM inventory_alerts_send;
 
--- CREATE TRIGGER inventory_alerts
--- AFTER UPDATE ON commodity_store
--- FOR EACH ROW
--- BEGIN
---     IF (:new.quantity < :new.threshold) THEN
---         INSERT INTO inventory_alerts_send (alertID, send_date, commodityID, description, iid)
---         VALUES (dbms_random.string('p',10), SYSDATE, :new.commodityID, 'Low stock alert', :new.iid);
---     END IF;
--- END;
+CREATE TRIGGER inventory_alerts
+AFTER UPDATE ON commodity_store
+FOR EACH ROW
+BEGIN
+    IF (:new.quantity < :new.threshold) THEN
+        INSERT INTO inventory_alerts_send (alertID, send_date, commodityID, description, iid)
+        VALUES (dbms_random.string('p',10), SYSDATE, :new.commodityID, 'Low stock alert', :new.iid);
+    END IF;
+END;
 
--- for postgresql
--- CREATE OR REPLACE FUNCTION alert()
--- RETURNS TRIGGER AS $commodity_store$
---    BEGIN
---       IF (new.quantity < new.threshold) THEN
---         INSERT INTO inventory_alerts_send (alertID, send_date, commodityID, description, iid)
---         VALUES (substring(random()::text, 1, 10), now(), new.commodityID, 'Low stock alert', new.iid);
---         return new;
---       END IF;
---    END;
--- $commodity_store$ LANGUAGE plpgsql;
+for postgresql
+CREATE OR REPLACE FUNCTION alert()
+RETURNS TRIGGER AS $commodity_store$
+   BEGIN
+      IF (new.quantity < new.threshold) THEN
+        INSERT INTO inventory_alerts_send (alertID, send_date, commodityID, description, iid)
+        VALUES (substring(random()::text, 1, 10), now(), new.commodityID, 'Low stock alert', new.iid);
+        return new;
+      END IF;
+   END;
+$commodity_store$ LANGUAGE plpgsql;
 
--- CREATE TRIGGER inventory_alerts
--- AFTER UPDATE ON commodity_store
--- FOR EACH ROW
--- EXECUTE PROCEDURE alert();
+CREATE TRIGGER inventory_alerts
+AFTER UPDATE ON commodity_store
+FOR EACH ROW
+EXECUTE PROCEDURE alert();
 
--- SELECT send_date, commodityID, description, iid  FROM inventory_alerts_send;
+SELECT send_date, commodityID, description, iid  FROM inventory_alerts_send;
 
--- INSERT INTO inventory(iid, location)
--- VALUES ('003', '123_MainSt');
+INSERT INTO inventory(iid, location)
+VALUES ('003', '123_MainSt');
 
--- INSERT INTO commodity_store(commodityID, name, price, category, discount, expDate, quantity, threshold, iid)
--- VALUES ('1234567890', 'bread', 4.46, 'bread', 1, now(), 20, 20, '003');
+INSERT INTO commodity_store(commodityID, name, price, category, discount, expDate, quantity, threshold, iid)
+VALUES ('1234567890', 'bread', 4.46, 'bread', 1, now(), 20, 20, '003');
 
--- UPDATE commodity_store
--- SET quantity = quantity - 1
--- WHERE commodityID = '1234567890';
+UPDATE commodity_store
+SET quantity = quantity - 1
+WHERE commodityID = '1234567890';
 
--- SELECT send_date, commodityID, description, iid FROM inventory_alerts_send;
+SELECT send_date, commodityID, description, iid FROM inventory_alerts_send;

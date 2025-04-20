@@ -124,45 +124,23 @@
         <h1>Welcome Back!</h1>
     </header>
 
-    <nav class="navbar">
-        <div class="navbar">
-            <div class="logo"><a href="#"></a></div>
-            <ul>
-                <li><a href="/employee/basic_info">Basic Info</a></li>
-                <li><a href="/employee/inventory_manager/inventory.html">Inventory</a></li>
-                <li><a href="/employee/inventory_manager/alert.html">Alert</a></li>
-                <li><a href="/employee/work_record.html">Punch_Record</a></li>
-            </ul>
-        </div>
-    </nav>
+    <a href="/employee/return">Return</a>
 
-    <h1>Items in Inventory</h1>
+    <h2>Today's Punch Record</h2>
     <table>
         <thead>
             <tr>
-                <th>Commodity ID  </th>
-                <th>Name     </th>
-                <th>Price ($)     </th>
-                <th>Category     </th>
-                <th>Discount     </th>
-                <th>expDate     </th>
-                <th>Quantity     </th>
-                <th>Threshold     </th>
-                <th>Inventory id     </th>
+                <th>punch date  </th>
+                <th>type  </th>
+                <th>device     </th>
             </tr>
         </thead>
         <tbody>
             {% for item in items %}
             <tr>
-                <td>{{ item[0] }}</td>
                 <td>{{ item[1] }}</td>
                 <td>{{ item[2] }}</td>
                 <td>{{ item[3] }}</td>
-                <td>{{ item[4] }}</td>
-                <td>{{ item[5] }}</td>
-                <td>{{ item[6] }}</td>
-                <td>{{ item[7] }}</td>
-                <td>{{ item[8] }}</td>
             </tr>
             {% endfor %}
         </tbody>

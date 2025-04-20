@@ -129,8 +129,8 @@
             <div class="logo"><a href="#"></a></div>
             <ul>
                 <li><a href="/employee/basic_info">Basic Info</a></li>
-                <li><a href="/employee/inventory_manager/inventory.html">Inventory</a></li>
-                <li><a href="/employee/inventory_manager/alert.html">Alert</a></li>
+                <li><a href="/employee/inventory_manager/shelf.html">Shelf</a></li>
+                <li><a href="/employee/inventory_manager/shelf_alert.html">Alert</a></li>
                 <li><a href="/employee/work_record.html">Punch_Record</a></li>
             </ul>
         </div>
@@ -140,15 +140,11 @@
     <table>
         <thead>
             <tr>
+                <th>Shelf  </th>
                 <th>Commodity ID  </th>
                 <th>Name     </th>
-                <th>Price ($)     </th>
-                <th>Category     </th>
-                <th>Discount     </th>
-                <th>expDate     </th>
                 <th>Quantity     </th>
                 <th>Threshold     </th>
-                <th>Inventory id     </th>
             </tr>
         </thead>
         <tbody>
@@ -156,13 +152,9 @@
             <tr>
                 <td>{{ item[0] }}</td>
                 <td>{{ item[1] }}</td>
+                <td>{{ item[5] }}</td>
                 <td>{{ item[2] }}</td>
                 <td>{{ item[3] }}</td>
-                <td>{{ item[4] }}</td>
-                <td>{{ item[5] }}</td>
-                <td>{{ item[6] }}</td>
-                <td>{{ item[7] }}</td>
-                <td>{{ item[8] }}</td>
             </tr>
             {% endfor %}
         </tbody>
