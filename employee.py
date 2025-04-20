@@ -287,8 +287,8 @@ ON C.commodityID = D.commodityID", [sid, sid])
     print(shelf_alerts)
     return render_template('/employee/stock_clerk/shelf_alert.html', items=shelf_alerts)
 
-@app.route("/employee/custodian/maintain.html", methods=['GET'])
-def upload_maintenance():
+# @app.route("/employee/custodian/maintain.html", methods=['GET'])
+# def upload_maintenance():
     
 
 if __name__ == '__main__':
