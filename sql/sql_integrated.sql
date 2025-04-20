@@ -40,6 +40,11 @@ drop table member;
 drop table non_member;
 drop table customer;
 DROP TABLE inventory_alerts_send;
+drop table shelf_alerts_send;
+drop table load_on;
+drop table handle;
+drop table shelf;
+drop table work_record;
 DROP TABLE commodity_store;
 DROP TABLE monitor;
 DROP TABLE inventory;
@@ -57,6 +62,12 @@ CREATE TABLE employee (
 
 INSERT INTO employee (ssn, name, birthday, salary, POSITION, password) VALUES
 ('12305456', 'Henry', TO_DATE('1989/06/04 00:00:00', 'yyyy/mm/dd hh24:mi:ss'), 70000, 'inventory_manager', 'abc');
+INSERT INTO employee (ssn, name, birthday, salary, POSITION, password) VALUES
+('22305456', 'Bob', TO_DATE('1995/06/04 00:00:00', 'yyyy/mm/dd hh24:mi:ss'), 70000, 'cashier', 'abc');
+INSERT INTO employee (ssn, name, birthday, salary, POSITION, password) VALUES
+('32305456', 'Mike', TO_DATE('1996/06/04 00:00:00', 'yyyy/mm/dd hh24:mi:ss'), 80000, 'custodian', 'abc');
+INSERT INTO employee (ssn, name, birthday, salary, POSITION, password) VALUES
+('42305456', 'Oliver', TO_DATE('1996/12/04 00:00:00', 'yyyy/mm/dd hh24:mi:ss'), 80000, 'stock_clerk', 'abc');
 
 SELECT * FROM employee;
 
@@ -135,6 +146,114 @@ WHERE commodityID = '1234567890';
 
 SELECT * FROM inventory_alerts_send;
 
+CREATE TABLE work_record (
+    ssn VARCHAR(9),
+    work_date DATE,
+    type VARCHAR(10),
+    device VARCHAR(10),
+    PRIMARY KEY (ssn, work_date),
+    FOREIGN KEY (ssn) REFERENCES employee(ssn) on delete cascade
+);
+
+SELECT  * FROM work_record;
+DELETE FROM work_record;
+
+CREATE TABLE shelf(
+    shelfID VARCHAR(10),
+    location VARCHAR(10),
+    capacity INT,
+    PRIMARY KEY (shelfID)
+);
+
+INSERT INTO shelf(shelfID, location, capacity) VALUES ('001', 'North01', 60);
+INSERT INTO shelf(shelfID, location, capacity) VALUES ('002', 'South01', 50);
+INSERT INTO shelf(shelfID, location, capacity) VALUES ('003', 'West01', 70);
+
+CREATE TABLE handle(
+    ssn VARCHAR(9),
+    shelfID VARCHAR(10),
+    PRIMARY KEY (ssn, shelfID),
+    FOREIGN KEY (ssn) REFERENCES employee(ssn),
+    FOREIGN KEY (shelfID) REFERENCES shelf(shelfID)
+);
+
+INSERT INTO handle(ssn, shelfID) VALUES ('42305456', '001');
+INSERT INTO handle(ssn, shelfID) VALUES ('42305456', '002');
+INSERT INTO handle(ssn, shelfID) VALUES ('42305456', '003');
+
+CREATE TABLE load_on(
+    shelfID VARCHAR(10),
+    commodityID VARCHAR(10),
+    quantity DECIMAL(10, 2),
+    threshold DECIMAL(10, 2),
+    PRIMARY KEY (shelfID, commodityID),
+    FOREIGN KEY (shelfID) REFERENCES shelf(shelfID),
+    FOREIGN KEY (commodityID) REFERENCES commodity_store(commodityID)
+);
+
+INSERT INTO load_on(shelfID, commodityID, quantity, threshold) VALUES
+('001', '1234567890', 10, 2);
+INSERT INTO load_on(shelfID, commodityID, quantity, threshold) VALUES
+('002', '12305456', 20, 5);
+
+CREATE TABLE shelf_alerts_send(
+    id varchar(10),
+    send_date DATE,
+    commodityID VARCHAR(10),
+    description VARCHAR(50),
+    shelfID VARCHAR(10) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (shelfID) REFERENCES shelf(shelfID)
+);
+CREATE TRIGGER shelf_alerts
+AFTER UPDATE ON load_on
+FOR EACH ROW
+BEGIN
+    IF (:new.quantity < :new.threshold) THEN
+        INSERT INTO shelf_alerts_send (id, send_date, commodityID, description, shelfID)
+        VALUES (dbms_random.string('p',10), SYSDATE, :new.commodityID, 'Low stock alert', :new.shelfID);
+    END IF;
+END;
+
+UPDATE load_on 
+SET quantity = quantity - 9
+WHERE commodityID = '1234567890';
+
+SELECT * FROM shelf_alerts_send;
+
+SELECT *
+FROM (
+    SELECT A.commodityID, A.quantity, A.threshold, B.name
+    FROM (SELECT commodityID, quantity, threshold FROM load_on WHERE shelfID = '001') A
+    JOIN (SELECT commodityID, name FROM commodity_store) B
+    ON A.commodityID = B.commodityID
+) C
+JOIN (
+    SELECT commodityID, send_date, DESCRIPTION 
+    FROM shelf_alerts_send
+    WHERE shelfID = '001'
+) D
+ON C.commodityID = D.commodityID;
+
+CREATE TABLE maintenance_region(
+    regionID VARCHAR(10),
+    location VARCHAR(10),
+    area INT,
+    PRIMARY KEY (regionID)
+);
+INSERT INTO maintenance_region(regionID, location, area) VALUES ('001', 'North01', 1);
+INSERT INTO maintenance_region(regionID, location, area) VALUES ('002', 'West01', 2);
+INSERT INTO maintenance_region(regionID, location, area) VALUES ('003', 'South01', 3);
+
+CREATE TABLE maintain(
+    ssn VARCHAR(9),
+    regionID VARCHAR(10),
+    PRIMARY KEY (ssn, regionID),
+    FOREIGN KEY (ssn) REFERENCES employee(ssn),
+    FOREIGN KEY (regionID) REFERENCES maintenance_region(regionID)
+);
+INSERT INTO maintain(ssn, regionID) VALUES ('32305456', '001');
+INSERT INTO maintain(ssn, regionID) VALUES ('32305456', '002');
 
 -- CUSTOMER
 

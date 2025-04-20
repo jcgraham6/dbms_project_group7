@@ -128,63 +128,37 @@
         <div class="navbar">
             <div class="logo"><a href="#"></a></div>
             <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/empolyee/inventory_manager/inventory.html">Inventory</a></li>
-                <li><a href="/empolyee/inventory_manager/alert.html">Alert</a></li>
+                <li><a href="/employee/basic_info">Basic Info</a></li>
+                <li><a href="/employee/inventory_manager/shelf.html">Shelf</a></li>
+                <li><a href="/employee/inventory_manager/shelf_alert.html">Alert</a></li>
+                <li><a href="/employee/work_record.html">Punch_Record</a></li>
             </ul>
         </div>
     </nav>
 
-    <section class="hero">
-        <h3>Your daily source for fresh, local produce and quality groceries.</h3>
-        <a href="#" class="profile-icon"><i class="fas fa-user-circle"></i></a>
-    </section>
-
-    <h1>Items in Database</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Price ($)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item.id }}</td>
-                <td>{{ item.name }}</td>
-                <td>{{ "%.2f"|format(item.price) }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+    <h2>Personal Information</h2>
+    <table border="1">
+        {% for key, value in personal_info.items() %}
+        <tr>
+            <td><strong>{{ key }}</strong></td>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
     </table>
 
-    <section class="products">
-        <div class="deals">
-          <p>Current Deals!</p>
-        </div>
-        <div class="product">
-            <img src="https://assets.bonappetit.com/photos/57daf2c35a14a530086efae5/master/w_1600%2Cc_limit/undefined" alt="Green Apples">
-            <h3>Green Apples</h3>
-            <p>$2.00/lb</p>
-        </div>
-        <div class="product">
-            <img src="https://tinyurl.com/urabdacm" alt="Broccoli">
-            <h3>Broccoli</h3>
-            <p>$1.50/lb</p>
-        </div>
-        <div class="product">
-            <img src="https://www.kroger.com/product/images/large/front/0000000004225" alt="Avocado">
-            <h3>Avocado</h3>
-            <p>$0.99 each</p>
-        </div>
-        <div class="product">
-            <img src="https://www.kroger.com/product/images/large/front/0000000004225" alt="Avocado">
-            <h3>Avocado</h3>
-            <p>$0.99 each</p>
-        </div>
-    </section>
+    <h3>Punch In</h3>
+    <form action="/employee/punch_in" method="post">
+        <button type="submit" style="font-size: 12px; padding: 4px 8px;">
+            Punch In
+        </button>
+    </form>
+
+    <h3>Punch Out</h3>
+    <form action="/employee/punch_out" method="post">
+        <button type="submit" style="font-size: 12px; padding: 4px 8px;">
+            Punch Out
+        </button>
+    </form>
 
     <footer>
         <p>&copy; 2025 The Daily Pick. All Rights Reserved.</p>

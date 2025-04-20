@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import oracledb
 import pandas as pd
 import os
+from datetime import datetime, date
 
 def connect_to_db():
 
@@ -126,6 +127,10 @@ def employee_signin():
         if session['position'] == 'cashier':
             return render_template('employee/cashier/cashier.html', personal_info=session)
         elif session['position'] == 'custodian':
+            session['maintain_regions'] = []
+            cursor.execute("SELECT * FROM maintain WHERE ssn=:ssn", [ssn])
+            for row in cursor.fetchall():
+                session['maintain_regions'].append(row[1])
             return render_template('employee/custodian/custodian.html', personal_info=session)
         elif session['position'] == 'inventory_manager':
             return render_template('employee/inventory_manager/inventory_manager.html', personal_info=session)
@@ -187,6 +192,104 @@ def alert_lookup():
     conn.close()
     print(alerts)
     return render_template('/employee/inventory_manager/alert.html', items=alerts)
+
+@app.route("/employee/work_record.html", methods=['GET'])
+def work_record():
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    result = cursor.execute("select * from work_record where ssn=:ssn and work_date >= :today order by work_date", [session['ssn'], datetime.combine(date.today(), datetime.min.time())])
+    work_records = result.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('/employee/work_record.html', items=work_records)
+
+@app.route('/employee/punch_in', methods=['POST'])
+def punch_in():
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    result = cursor.execute("insert into work_record (ssn, work_date, type, device) values" \
+    "(:ssn, :time, :punch_type, :device)", [session['ssn'], datetime.now(), 'punch_in', 'web'])
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return render_template('employee/punch_back.html')
+
+@app.route('/employee/punch_out', methods=['POST'])
+def punch_out():
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    result = cursor.execute("insert into work_record (ssn, work_date, type, device) values" \
+    "(:ssn, :time, :punch_type, :device)", [session['ssn'], datetime.now(), 'punch_out', 'web'])
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return render_template('employee/punch_back.html')
+
+@app.route('/employee/return', methods=['get'])
+def punch_return():
+    if session['position'] == 'cashier':
+        return render_template('employee/cashier/cashier.html', personal_info=session)
+    elif session['position'] == 'custodian':
+        return render_template('employee/custodian/custodian.html', personal_info=session)
+    elif session['position'] == 'inventory_manager':
+        return render_template('employee/inventory_manager/inventory_manager.html', personal_info=session)
+    elif session['position'] == 'stock_clerk':
+        return render_template('employee/stock_clerk/stock_clerk.html', personal_info=session)
+    else:
+        return "Invalid position"
+
+@app.route("/employee/inventory_manager/shelf.html", methods=['GET'])
+def shelf_lookup():
+    session['shelf_id'] = []
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    result = cursor.execute("select * from handle where ssn=:ssn", [session['ssn']])
+    for row in result:
+        session['shelf_id'].append(row[1])
+    cursor.close()
+    # Fetch data from the corresponding inventory
+    shelf_items = []
+    cursor=conn.cursor()
+    for sid in session['shelf_id']:
+        result = cursor.execute("select * from load_on A join commodity_store B on A.commodityID = B.commodityID where A.shelfID = :id", [sid])
+        shelf_items = shelf_items + result.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('/employee/stock_clerk/shelf.html', items=shelf_items)
+
+@app.route("/employee/inventory_manager/shelf_alert.html", methods=['GET'])
+def shelf_alert_lookup():
+    session['shelf_id'] = []
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    result = cursor.execute("select * from handle where ssn=:ssn", [session['ssn']])
+    for row in result:
+        session['shelf_id'].append(row[1])
+    cursor.close()
+    # Fetch data from the corresponding inventory
+    shelf_alerts = []
+    cursor=conn.cursor()
+    print(session['shelf_id'])
+    for sid in session['shelf_id']:
+        result = cursor.execute("SELECT * FROM (SELECT A.commodityID, A.quantity, A.threshold, B.name FROM (SELECT commodityID, quantity, threshold FROM load_on WHERE shelfID = :sid) A \
+    JOIN (SELECT commodityID, name FROM commodity_store) B \
+    ON A.commodityID = B.commodityID \
+) C \
+JOIN ( \
+    SELECT commodityID, send_date, DESCRIPTION, shelfID  \
+    FROM shelf_alerts_send \
+    WHERE shelfID = :sid \
+) D \
+ON C.commodityID = D.commodityID", [sid, sid])
+        shelf_alerts = shelf_alerts + result.fetchall()
+    cursor.close()
+    conn.close()
+    print(shelf_alerts)
+    return render_template('/employee/stock_clerk/shelf_alert.html', items=shelf_alerts)
+
+@app.route("/employee/custodian/maintain.html", methods=['GET'])
+def upload_maintenance():
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
