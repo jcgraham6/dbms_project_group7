@@ -128,19 +128,22 @@
         <div class="navbar">
             <div class="logo"><a href="#"></a></div>
             <ul>
-                <li><a href="/home">Home</a></li>
+                <li><a href="/">Home</a></li>
                 <li><a href="/shop">Shop</a></li>
                 <li><a href="#">Deals</a></li>
+                <li><a href="/signin">Sign-In</a></li>
                 <li><a href="/contactus">Contact</a></li>
+                <li><a href="{{ url_for('recommend') }}">Recommendations</a></li>
             </ul>
         </div>
     </nav>
 
     <section class="hero">
         <h3>Your daily source for fresh, local produce and quality groceries.</h3>
-        <a href="/profile" class="profile-icon"><i class="fas fa-user-circle"></i></a>
+        <a href="#" class="profile-icon"><i class="fas fa-user-circle"></i></a>
     </section>
 
+    
     <section class="products">
         <div class="deals">
           <p>Current Deals!</p>
@@ -161,7 +164,7 @@
             <p>$0.99 each</p>
         </div>
     </section>
-
+    
     <footer>
         <p>&copy; 2025 The Daily Pick. All Rights Reserved.</p>
     </footer>

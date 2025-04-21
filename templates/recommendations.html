@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommended for You</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            text-decoration: none;
+        }
+        .navbar {
+            background: crimson;
+            font-family: calibri;
+            padding-right: 25px;
+            padding-left: 15px;
+        }
+        .navdiv {
+            display: flex;
+            align-items: center;
+        }
+        .logo a {
+            font-size: 35px;
+            font-weight: 600;
+            color: white;
+        }
+        li {
+            list-style: none;
+            display: inline-block;
+        }
+        li a {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-right: 25px;
+        }
+        
+        button a {
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+  
+<body>
+    <nav class="navbar">
+        <div class="navbar">
+            <div class="logo"><a href="#">Daily Pick</a></div>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/shop">Shop</a></li>
+                <li><a href="#">Deals</a></li>
+                <li><a href="/signin">Sign-In</a></li>
+                <li><a href="/contactus">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <h2>Recommended For You</h2>
+
+    <form method="POST" action="{{ url_for('recommend') }}">
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category">
+        
+        <label for="brand">Brand:</label>
+        <input type="text" id="brand" name="brand">
+        
+        <label for="dietary">Dietary Restrictions:</label>
+        <input type="text" id="dietary" name="dietary">
+        
+        <button type="submit">Get Recommendations</button>
+    </form>
+<ul>
+    <ul>
+        {% if products %}
+          {% for product in products %}
+            <li>{{ product.name }} - ${{ product.price }}</li>
+          {% endfor %}
+        {% else %}
+          <li>No matches found.</li>
+        {% endif %}
+      </ul>
+        
+</ul>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2025 The Daily Pick. | All Rights Reserved</p>
+    </footer>
+</body>
+</html>
