@@ -57,20 +57,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% set total = 0 %}
+                    {% set ns = namespace(total=0) %}
                     {% for item in cart %}
-                        {% set item_total = item['price'] * item['quantity'] %}
-                        {% set total = total + item_total %}
+                        {% set item_total = item.price * item.quantity %}
+                        {% set ns.total = ns.total + item_total %}
                         <tr>
-                            <td>{{ item['name'] }}</td>
-                            <td>{{ item['quantity'] }}</td>
-                            <td>${{ item['price'] | round(2) }}</td>
-                            <td>${{ item_total | round(2) }}</td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ '%.2f' % item.price }}</td>
+                            <td>${{ '%.2f' % item_total }}</td>
                         </tr>
                     {% endfor %}
                     <tr class="font-weight-bold">
                         <td colspan="3" class="text-right">Grand Total:</td>
-                        <td>${{ total | round(2) }}</td>
+                        <td>${{ '%.2f' % ns.total }}</td>
                     </tr>
                 </tbody>
                 
