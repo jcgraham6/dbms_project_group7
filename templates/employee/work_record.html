@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>The Daily Pick - Grocery Store</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
         body {
@@ -126,25 +127,28 @@
 
     <a href="/employee/return">Return</a>
 
-    <h2>Today's Punch Record</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>punch date  </th>
-                <th>type  </th>
-                <th>device     </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item[1] }}</td>
-                <td>{{ item[2] }}</td>
-                <td>{{ item[3] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <h2 style="display: flex; justify-content: center;">Today's Punch Record</h2>
+
+    <div class="container">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">punch date</th>
+                    <th scope="col">type</th>
+                    <th scope="col">device</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item[1] }}</td>
+                    <td>{{ item[2] }}</td>
+                    <td>{{ item[3] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <footer>
         <p>&copy; 2025 The Daily Pick. All Rights Reserved.</p>
