@@ -98,6 +98,9 @@ INSERT INTO monitor (ssn, iid, assigned_date) VALUES ('12305456', '003', TO_DATE
 
 SELECT * FROM monitor;
 
+
+
+
 CREATE TABLE commodity_store(
     commodityID varchar(10),
     name VARCHAR(50),
@@ -108,12 +111,46 @@ CREATE TABLE commodity_store(
     quantity DECIMAL(10, 2),
     threshold DECIMAL(10, 2),
     iid VARCHAR(10) NOT NULL,
+    brand VARCHAR(50),
+    dietaryrestric VARCHAR(50),
     PRIMARY KEY (commodityID),
     FOREIGN KEY (iid) REFERENCES inventory(iid)
 );
+-- VEGETABLES
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('2001', 'Spinach', 2.49, 'Vegetables', 0.1, SYSDATE + 5, 40, 10, '001', 'GreenHarvest', 'Vegan');
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('2002', 'Broccoli', 2.99, 'Vegetables', 0.15, SYSDATE + 6, 35, 8, '003', 'OrganicFarm', 'Gluten-Free');
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('2003', 'Bell Peppers', 3.29, 'Vegetables', 0.1, SYSDATE + 5, 50, 15, '003', 'VeggieFresh', 'Vegan');
 
-INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid) VALUES
-('12305456', 'apple', 1.2, 'fruit', 1.0, TO_DATE('2025/05/04 00:00:00', 'yyyy/mm/dd hh24:mi:ss'), 300, 50, '001');
+-- FRUITS
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('3001', 'Bananas', 1.49, 'Fruits', 0.05, SYSDATE + 4, 60, 20, '001', 'TropiFresh', 'Vegan');
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('3002', 'Apples', 2.19, 'Fruits', 0.1, SYSDATE + 6, 70, 25, '001', 'FreshFarm', 'Vegan');
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('3003', 'Blueberries', 3.99, 'Fruits', 0.15, SYSDATE + 7, 40, 10, '003', 'BerryGood', 'Gluten-Free');
+
+-- MEAT
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('4001', 'Chicken Breast', 5.99, 'Meat', 0.2, SYSDATE + 4, 30, 10, '001', 'FarmFresh', 'None');
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('4002', 'Ground Beef', 6.49, 'Meat', 0.1, SYSDATE + 5, 25, 8, '001', 'ButcherBlock', 'None');
+INSERT INTO commodity_store (commodityID, name, price, category, discount, expDate, quantity, threshold, iid, brand, dietaryrestric)
+VALUES 
+('4003', 'Salmon Fillet', 8.99, 'Meat', 0.25, SYSDATE + 3, 20, 5, '003', 'SeaHarvest', 'Pescatarian');
+
+
+
 
 SELECT * FROM commodity_store;
 
@@ -128,6 +165,8 @@ CREATE TABLE inventory_alerts_send(
     PRIMARY KEY (alertID),
     FOREIGN KEY (iid) REFERENCES inventory(iid)
 );
+
+DROP TRIGGER inventory_alerts;
 CREATE TRIGGER inventory_alerts
 AFTER UPDATE ON commodity_store
 FOR EACH ROW
@@ -138,8 +177,7 @@ BEGIN
     END IF;
 END;
 
-INSERT INTO commodity_store(commodityID, name, price, category, discount, expDate, quantity, threshold, iid) VALUES
-('1234567890', 'bread', 4.46, 'bread', 1, SYSDATE + 30, 20, 20, '003');
+
 UPDATE commodity_store
 SET quantity = quantity - 1
 WHERE commodityID = '1234567890';
