@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>The Daily Pick - Grocery Store</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
         body {
@@ -136,33 +136,36 @@
         </div>
     </nav>
 
-    <h1>Alerts</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Send Date     </th>
-                <th>CommodityID     </th>
-                <th>Description     </th>
-                <th>Inventory id     </th>
-                <th>Name     </th>
-                <th>Quantity     </th>
-                <th>Threshold     </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item[1] }}</td>
-                <td>{{ item[2] }}</td>
-                <td>{{ item[3] }}</td>
-                <td>{{ item[13] }}</td>
-                <td>{{ item[6] }}</td>
-                <td>{{ item[11] }}</td>
-                <td>{{ item[12] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <h2 style="display: flex; justify-content: center;">Alerts</h2>
+
+    <div class="container">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Send Date</th>
+                    <th scope="col">CommodityID</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Inventory ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Threshold</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item[1] }}</td>
+                    <td>{{ item[2] }}</td>
+                    <td>{{ item[3] }}</td>
+                    <td>{{ item[13] }}</td>
+                    <td>{{ item[6] }}</td>
+                    <td>{{ item[11] }}</td>
+                    <td>{{ item[12] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <footer>
         <p>&copy; 2025 The Daily Pick. All Rights Reserved.</p>
