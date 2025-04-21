@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash, get_flashed_messages
 import oracledb
 import pandas as pd
 import os
@@ -53,11 +53,11 @@ def insert_data(sql, data):
         con.commit()
         cursor.close()
                
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         raise
         
 
-def update(sql, data):
+def update_data(sql, data):
     '''
     Documentation: https://python-oracledb.readthedocs.io/en/latest/user_guide/batch_statement.html
 
@@ -72,7 +72,7 @@ def update(sql, data):
         con.commit()
         cursor.close()
                
-    except cx_Oracle.DatabaseError as e:
+    except oracledb.DatabaseError as e:
         raise
         
 
@@ -82,10 +82,122 @@ app = Flask(__name__)
 # Secret key for session
 app.secret_key = os.urandom(24)
 
-@app.route("/") # Route is the place to go (/ represents the base url or the homepage)
+@app.route('/', methods=['GET', 'POST']) # Route is the place to go (/ represents the base url or the homepage)
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
 
-def index():
+        # Pull username and password from DB
+        real_password = fetch_data('SELECT PASSWORD FROM ACCOUNT WHERE USERNAME = :1',[username])
+
+        # Validate credentials
+        if  password == real_password['PASSWORD'][0]:
+            session['user'] = username
+            return redirect(url_for('home')) 
+        else:
+            return render_template('login.html', error='Invalid credentials')
+    
+    return render_template('login.html')
+
+@app.route('/home')
+def home():
+
     return render_template('DailyPick.html')
+
+@app.route('/profile', methods = ['GET','POST'])
+def profile():
+    try:
+
+        # Get the user email from session
+        username = session.get('user')
+
+        if not username:
+            return "Unauthorized", 401  # Or redirect to login
+
+        account_sql = '''
+            SELECT username, phone, paypref
+            FROM ACCOUNT
+            WHERE username = :1
+        '''
+
+        df = fetch_data(account_sql, [(username)])
+# Account has no ties to the preferences table
+
+        if request.method == 'POST':
+
+            diet = request.form.get('diet')
+            brand = request.form.get('brand')
+            budget = request.form.get('budget')
+
+            pref_sql = '''
+            SELECT * FROM PREFERENCES WHERE USERNAME = :1
+            '''
+
+            pref_df = fetch_data(pref_sql, [(username)])
+        
+            if pref_df.empty == True:
+                insert_sql = '''
+                INSERT INTO PREFERENCES (username, max_budget, dietaryrestric, prefbrands)
+                VALUES (:1, :2, :3, :4)
+                '''
+
+                insert_data(insert_sql, [(username, budget, diet, brand)])
+
+                flash("Preferences saved successfully!", "success")
+
+            
+            else:
+                update_sql = '''
+                UPDATE PREFERENCES SET
+                max_budget = :1, 
+                dietaryrestric = :2, 
+                prefbrands = :3
+                WHERE USERNAME = :4
+                '''
+
+                update_data(update_sql, [(budget, diet, brand, username)])
+
+                flash("Preferences saved successfully!", "success")
+
+
+
+        return render_template('Account.html',
+                               username=df['USERNAME'].iloc[0],
+                               phone=df['PHONE'].iloc[0],
+                               credit_card= df['PAYPREF'].iloc[0])
+    
+
+    except oracledb.DatabaseError as e:
+        print(f"Database Error: {e}")
+        return "Internal Server Error", 500
+
+
+@app.route('/createaccount', methods=['GET', 'POST'])
+def createaccount():
+    if request.method == 'POST':
+        try:
+            email = request.form['email']
+            username = request.form['username']
+            password = request.form['password']
+            phone = request.form['phone']
+            saveditem = request.form['saveditem']
+            paypref = request.form['paypref']
+
+            insert_sql = '''
+            INSERT INTO ACCOUNT (createDate, phone, password, email, username, saveditem, paypref)
+            VALUES (CURRENT_DATE, :1, :2, :3, :4, :5, :6)
+            '''
+
+            insert_data(insert_sql, [(phone, password, email, username, saveditem, paypref)]) 
+            return redirect(url_for('login'))  # Redirect to login
+
+        except KeyError as e:
+            print(f"KeyError: Missing fields for {str(e)}")
+            return "Missing data", 400
+
+    # Render the CreateAccount form
+    return render_template('CreateAccount.html')
 
 
 @app.route('/shop', methods=['GET'])
@@ -173,6 +285,7 @@ def remove_from_cart():
     # Refresh page
     return redirect(url_for('cart'))
 
+
 @app.route('/clear_cart', methods=['POST'])
 def clear_cart():
 
@@ -188,17 +301,6 @@ def cart():
     cart = session.get('cart', [])
     return render_template('Cart.html', cart=cart)
 
-
-@app.route('/signin', methods=['GET'])
-def signin():
-    
-    # Connect to db
-    conn = connect_to_db()
-    cursor = conn.cursor()
-
-    print('Hello!')
-
-    return render_template('SignIn.html')
 
 
 @app.route('/go_to_signin')
@@ -252,4 +354,3 @@ def submit_review():
     return render_template(f'/product/{commodityID}')
 if __name__ == '__main__':
     app.run(debug=True)
-
