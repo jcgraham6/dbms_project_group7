@@ -8,8 +8,8 @@ def connect_to_db():
     try:
         
         dsn = oracledb.makedsn('oracle.wpi.edu', 1521, sid = 'ORCL')
-        db = oracledb.connect(user = 'jgraham',
-                               password = 'JGRAHAM',
+        db = oracledb.connect(user = 'zzhang18',
+                               password = 'ZZHANG18',
                                dsn = dsn)
         return db
         
@@ -390,6 +390,89 @@ def submit_review():
 
     return render_template(f'/product/{commodityID}')
 
+@app.route('/checkout', methods=['GET', 'POST'])
+def checkout():
+    cart = session.get('cart', [])
+
+    if request.method == 'POST':
+        # Collect form data
+        name = request.form['name']
+        address = request.form['address']
+        card = request.form['card']
+
+        # Here you'd normally process payment and record the order
+        print(f"Order received from {name}, shipping to {address}, card ending in {card[-4:]}")
+
+        # Clear the cart
+        session['cart'] = []
+        session.modified = True
+
+        return render_template('thankyou.html', name=name)
+
+    return render_template('checkout.html', cart=cart)
+
+
+@app.route('/recommend', methods=['GET', 'POST'])
+def recommend():
+    products = []
+    categories = []
+    brands = []
+    dietary_options = []
+
+    conn = connect_to_db()
+    cursor = conn.cursor()
+
+    # Fetch distinct filter options
+    cursor.execute("SELECT DISTINCT category FROM commodity_store")
+    categories = [row[0] for row in cursor.fetchall() if row[0]]
+
+    cursor.execute("SELECT DISTINCT brand FROM commodity_store")
+    brands = [row[0] for row in cursor.fetchall() if row[0]]
+
+    cursor.execute("SELECT DISTINCT dietaryrestric FROM commodity_store")
+    dietary_options = [row[0] for row in cursor.fetchall() if row[0]]
+
+    if request.method == 'POST':
+        # Retrieve user preferences
+        pref_category = request.form.get('category')
+        pref_brand = request.form.get('brand')
+        pref_dietary = request.form.get('dietary')
+
+        print(f"Category: {pref_category}, Brand: {pref_brand}, Dietary: {pref_dietary}")
+
+        # Build dynamic query
+        base_query = "SELECT name, price FROM commodity_store WHERE 1=1"
+        params = {}
+
+        if pref_category:
+            base_query += " AND LOWER(category) = :category"
+            params['category'] = pref_category.lower()
+        if pref_brand:
+            base_query += " AND LOWER(brand) = :brand"
+            params['brand'] = pref_brand.lower()
+        if pref_dietary:
+            base_query += " AND LOWER(dietaryrestric) = :dietary"
+            params['dietary'] = pref_dietary.lower()
+
+        print(f"SQL Query: {base_query}, Parameters: {params}")
+
+        cursor.execute(base_query, params)
+        products = [{'name': name, 'price': price} for name, price in cursor.fetchall()]
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        'recommendations.html',
+        products=products,
+        categories=categories,
+        brands=brands,
+        dietary_options=dietary_options
+    )
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
+
