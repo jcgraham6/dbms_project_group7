@@ -379,16 +379,18 @@ FOREIGN KEY(orderID) REFERENCES orders,
 FOREIGN KEY (custID) REFERENCES customer(custID)
 );
 
+DROP TABLE review;
+
 CREATE TABLE Review(
   reviewID NUMBER PRIMARY KEY,
   commodityID varchar(10),
   custID VARCHAR(50),
   rating NUMBER NOT NULL,
-  review CLOB, 
-  reviewDate DATE,
-  FOREIGN KEY (commodityID) REFERENCES commodity_store(commodityID),
-  FOREIGN KEY (custID) REFERENCES member(custID)
+  review varchar(150), 
+  reviewDate DATE
 );
+SELECT * FROM review;
+WHERE commodityID = '2001';
 
 
 CREATE TABLE Account(
@@ -563,8 +565,8 @@ INSERT INTO Return_Request (returnID, orderID, returnReason, dateCreated, status
 INSERT INTO Return_Request (returnID, orderID, returnReason, dateCreated, status, custID) VALUES (4, 'ORD004', 'Defective', TO_DATE('2023-11-29', 'YYYY-MM-DD'), 'Pending','CUST002');
 INSERT INTO Return_Request (returnID, orderID, returnReason, dateCreated, status, custID) VALUES (5, 'ORD005', 'Not as described', TO_DATE('2023-11-30', 'YYYY-MM-DD'), 'Approved','CUST003');
 
-INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (1, '12305456', 4, 'Good product', TO_DATE('2023-11-27', 'YYYY-MM-DD'));
-INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (2, '1234567890', 5, 'Excellent product', TO_DATE('2023-11-28', 'YYYY-MM-DD'));
+INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (100, '2001', 4, 'Good product', TO_DATE('2023-11-27', 'YYYY-MM-DD'));
+INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (2, '3001', 5, 'Excellent product', TO_DATE('2023-11-28', 'YYYY-MM-DD'));
 INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (3, '12305456', 3, 'Average product', TO_DATE('2023-11-29', 'YYYY-MM-DD'));
 INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (4, '12305456', 2, 'Poor product', TO_DATE('2023-11-30', 'YYYY-MM-DD'));
 INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (5, '1234567890', 5, 'Awesome!', TO_DATE('2023-12-01','YYYY-MM-DD'));
