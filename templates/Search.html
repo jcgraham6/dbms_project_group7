@@ -76,7 +76,7 @@
             <ul>
                 <li><a href="/home">Home</a></li>
                 <li><a href="/shop">Shop</a></li>
-                <li><a href="#">Deals</a></li>
+                <li><a href="/cart">Cart</a></li>
                 <li><a href="/contactus">Contact</a></li>
                 <li><a href="/recommend">Recommendations</a></li>
             </ul>
@@ -103,13 +103,12 @@
                         <th scope="col">Product</th>
                         <th scope="col">Price</th>
                         <th scope="col">Quantity</th>
-                        <th scope="col">Action</th> <!-- New column for Add to Cart -->
+                        <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for product in data %}
                         <tr>
-<<<<<<< HEAD
                             <td>{{ product[0] }}</td>  
                             <td>${{ product[1] | round(2) }}</td> 
                             <td>{{ product[2] | int }}</td>
@@ -119,25 +118,12 @@
                                     <input type="hidden" name="product_name" value="{{ product[0] }}">
                                     <input type="hidden" name="price" value="{{ product[1] | round(2) }}">
                                     <input type="number" name="quantity" value="1" min="1" max="{{ product[2] | int }}" style="width: 60px;">
+                                    <input type="hidden" name="commodityID" value="{{ product[3] }}">
                                     <button type="submit" class="btn btn-success btn-sm">Add To Cart</button>
                                   </form>
-                                  <a href="{{ url_for('write_review', commodityName=product[0]) }}", class="btn btn-warning btn-sm">Write Review</a>
+                                  <a href="{{ url_for('write_review', commodityName=product[0]) }}" class="btn btn-warning btn-sm">Write a Review</a>
                                 </div>
                               </td>
-=======
-                            <td>{{ product[1] }}</td>  
-                            <td>${{ product[2] | round(2) }}</td> 
-                            <td>{{ product[3] | int }}</td>
-                            <td>
-                                <form method="POST" action="/add_to_cart">
-                                    <input type="hidden" name="commodityID" value="{{ product[0] }}">
-                                    <input type="hidden" name="product_name" value="{{ product[1] }}">
-                                    <input type="hidden" name="price" value="{{ product[2] | round(2)}}">
-                                    <input type="number" name="quantity" value="1" min="1" max="{{ product[3] | int }}">
-                                    <button type="submit" class="btn btn-success">Add to Cart</button>
-                                </form>
-                            </td>
->>>>>>> 21fdc22d7cdf772523c436723d453293d8ba13c1
                         </tr>
                     {% else %}
                         <tr>
