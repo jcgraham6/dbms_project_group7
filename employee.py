@@ -167,7 +167,10 @@ def inventory_lookup():
     inventory_items = []
     cursor=conn.cursor()
     for iid in session['inventory_id']:
-        result = cursor.execute("select A.*, B.rating from commodity_store A left join Review B on A.commodityID = B.commodityID where iid = :id", [iid])
+        result = cursor.execute("select A.commodityID, A.name, A.price, A.category, A.discount, A.expDate, A.quantity, A.threshold, A.iid, AVG(B.rating) \
+from commodity_store A left join Review B on A.commodityID = B.commodityID \
+where iid = :iid \
+group by A.commodityID, A.name, A.price, A.category, A.discount, A.expDate, A.quantity, A.threshold, A.iid", [iid])
         inventory_items = inventory_items + result.fetchall()
     cursor.close()
     conn.close()
