@@ -345,40 +345,6 @@ def contactus():
         return render_template('thankyou.html')
     return render_template('contactus.html')
 
-<<<<<<< HEAD
-=======
-@app.route('/product/<int:commodityID>')
-def product_detail(commodityID):
-    custID=session.get('custID') #Fetch from session
-    conn=connect_to_db()
-    cursor=conn.cursor()
-    cursor.execute("SELECT name, price FROM commodity_store WHERE commodityID=:id",[commodityID])
-    product=cursor.fetchone()
-
-    #Fetch Reviews
-    cursor.execute("""SELECT m.memberName, r.rating, r.comment, TO_CHAR(r.reviewDate, 'YYYY-MM-DD') FROM REVIEW r JOIN customer c ON r.custID=c.custID JOIN member m ON c.custID = m.custID WHERE r.commodityID=:id ORDER BY r.reviewDate DESC""", [commodityID])
-    reviews=cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return render_template('product_detail.html', product=product, reviews=reviews)
-
-@app.route('/submit_review', methods=['POST'])
-def submit_review():
-    if 'custID' not in session:
-        return redirect('/SignIn')
-    commodityID=request.form['commodityID']
-    custID=request.form['custID']
-    rating=request.form['rating']
-    comment=request.form['comment']
-    conn=connect_to_db()
-    cursor=conn.cursor()
-    cursor.execute("""INSERT INTO Review(reviewID, commodityID, custID, rating, comment, reviewDate) VALUES (review_seq.NEXTVAL, :commodityID, :custID, :rating, :comment, SYSDATE)""", [commodityID , custID, rating, comment])
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return render_template(f'/product/{commodityID}')
->>>>>>> 21fdc22d7cdf772523c436723d453293d8ba13c1
-
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     cart = session.get('cart', [])
