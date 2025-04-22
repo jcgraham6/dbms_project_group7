@@ -137,6 +137,11 @@ def profile():
             SELECT * FROM PREFERENCES WHERE USERNAME = :1
             '''
 
+            print("Form data received:")
+            print("Diet:", diet)
+            print("Brand:", brand)
+            print("Budget (raw):", request.form.get('budget'))
+
             # Store results in df
             pref_df = fetch_data(pref_sql, [(username)])
 
@@ -192,17 +197,16 @@ def createaccount():
             username = request.form['username']
             password = request.form['password']
             phone = request.form['phone']
-            saveditem = request.form['saveditem']
             paypref = request.form['paypref']
 
             # INSERT statement
             insert_sql = '''
-            INSERT INTO ACCOUNT (createDate, phone, password, email, username, saveditem, paypref)
-            VALUES (CURRENT_DATE, :1, :2, :3, :4, :5, :6)
+            INSERT INTO ACCOUNT (createDate, phone, password, email, username, paypref)
+            VALUES (CURRENT_DATE, :1, :2, :3, :4, :5)
             '''
 
             # Execute
-            insert_data(insert_sql, [(phone, password, email, username, saveditem, paypref)]) 
+            insert_data(insert_sql, [(phone, password, email, username, paypref)]) 
 
             # Return to login page
             return redirect(url_for('login'))  # Redirect to login
@@ -223,18 +227,25 @@ def shop():
     conn = connect_to_db()
     cursor = conn.cursor()
 
-    data = cursor.execute("SELECT COMMODITYID, NAME, PRICE, QUANTITY FROM COMMODITY_STORE")
+    # Pull commodity data
+    data = cursor.execute("SELECT NAME, PRICE, QUANTITY, COMMODITYID FROM COMMODITY_STORE")
 
+    # Get query from search bar
     search_query = request.args.get('search', '') 
 
+    # Initialize empty list
     filtered_data = []
 
+    # Filter commodity table based on search query
     if search_query:
         filtered_data = [row for row in data if search_query.lower().strip() in row[0].lower()]
+
+    # If not search then just return full table
     else:
         filtered_data = data
 
-    return render_template('Search.html', data=filtered_data)  # Here, you're passing `filtered_data`
+    # Render template and pass data table
+    return render_template('Search.html', data=filtered_data)
 
 
 
@@ -247,7 +258,7 @@ def go_to_shop():
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
     try:
-        product_id = request.form['commodityID']  # Make sure this field is in your form
+        product_id = request.form['commodityID']
         product_name = request.form['product_name']
         product_price = float(request.form['price'])
         product_quantity = int(request.form['quantity'])
@@ -314,36 +325,29 @@ def cart():
     return render_template('Cart.html', cart=cart)
 
 
-@app.route('/signin', methods=['GET'])
-def signin():
-    
-    # Connect to db
-    conn = connect_to_db()
-    cursor = conn.cursor()
-
-    print('Hello!')
-
-    return render_template('SignIn.html')
-
-
-@app.route('/go_to_signin')
-def go_to_signin():
-    # This route will redirect the user to the signin page
-    return redirect(url_for('signin'))
-
 @app.route('/contactus', methods=['GET', 'POST'])
 def contactus():
+
+    # Collect submission
     if request.method=='POST':
         name=request.form['name']
         email=request.form['email']
         message=request.form['message']
-        conn=connect_to_db()
-        cur=conn.cursor()
-        cur.execute("INSERT INTO contactus (name, email, message) VALUES(%s, %s, %s)", (name , email, message))
-        conn.commit()
-        cur.close()
+
+        # INSERT statement
+        contact_sql = '''
+        INSERT INTO contactus (name, email, message) 
+        VALUES(:1, :2, :3)
+        '''
+        # Execute 
+        insert_data(contact_sql, [(name , email, message)])
+        
+        # Return template
         return render_template('thankyou.html')
+    
+    # Render template
     return render_template('contactus.html')
+
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
