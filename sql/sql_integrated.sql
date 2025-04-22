@@ -379,7 +379,6 @@ FOREIGN KEY(orderID) REFERENCES orders,
 FOREIGN KEY (custID) REFERENCES customer(custID)
 );
 
-DROP TABLE review;
 
 CREATE TABLE Review(
   reviewID NUMBER PRIMARY KEY,
@@ -389,8 +388,6 @@ CREATE TABLE Review(
   review varchar(150), 
   reviewDate DATE
 );
-SELECT * FROM review;
-WHERE commodityID = '2001';
 
 
 CREATE TABLE Account(
@@ -570,6 +567,10 @@ INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (2
 INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (3, '12305456', 3, 'Average product', TO_DATE('2023-11-29', 'YYYY-MM-DD'));
 INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (4, '12305456', 2, 'Poor product', TO_DATE('2023-11-30', 'YYYY-MM-DD'));
 INSERT INTO Review (reviewID, commodityID, rating, review, reviewDate) VALUES (5, '1234567890', 5, 'Awesome!', TO_DATE('2023-12-01','YYYY-MM-DD'));
+select A.commodityID, A.name, A.price, A.category, A.discount, A.expDate, A.quantity, A.threshold, A.iid, AVG(B.rating)
+from commodity_store A left join Review B on A.commodityID = B.commodityID
+where iid = '2001'
+group by A.commodityID, A.name, A.price, A.category, A.discount, A.expDate, A.quantity, A.threshold, A.iid
 
 INSERT INTO Account (createDate, phone, password, email, username, saveditem, paypref) VALUES (TO_DATE('2023-11-15', 'YYYY-MM-DD'), 1234567890, 'pass123', 'user1@email.com', 'user1', 'item1', 'card1');
 INSERT INTO Account (createDate, phone, password, email, username, saveditem, paypref) VALUES (TO_DATE('2023-11-16', 'YYYY-MM-DD'), 9876543210, 'pass456', 'user2@email.com', 'user2', 'item2', 'card2');
