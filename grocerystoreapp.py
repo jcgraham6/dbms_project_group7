@@ -481,7 +481,6 @@ def write_review(commodityName):
                            reviews=reviews,
                            product_error=None)
 
-import uuid
 @app.route('/submit_review', methods=['POST'])
 def submit_review():
     print("Submit Review Endpoint Hit")
