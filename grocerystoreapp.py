@@ -137,11 +137,6 @@ def profile():
             SELECT * FROM PREFERENCES WHERE USERNAME = :1
             '''
 
-            print("Form data received:")
-            print("Diet:", diet)
-            print("Brand:", brand)
-            print("Budget (raw):", request.form.get('budget'))
-
             # Store results in df
             pref_df = fetch_data(pref_sql, [(username)])
 
