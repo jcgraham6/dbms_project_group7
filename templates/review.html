@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us</title>
+    <title>Reviews</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -130,11 +130,11 @@
     </nav>
     <div class="container">
         <div class="product_detail-form">
-            <h2>{{product[1]}}Details</h2>
+            <!-- Show the commodityID and ask for review -->
+            <h1>Write a Review for {{ product[1] }}</h1>
             <h3>Leave A Review</h3>
             <form action="/submit_review" method="post">
-                <input type="hidden" name="commodityID" value="{{product[0]}}">
-                <input type="hidden" name="custID" value="{{custID}}">
+                <input type="hidden" name="commodityName" value="{{ product[1] }}">
                 Rating:
                 <select name="rating" required>
                     <option value="5">★★★★★</option>
@@ -149,13 +149,18 @@
             </form>
         </div>
     </div>
-        <h3> Reviews</h3>
-        {% for review in reviews %}
-            <div class="review-card"> 
-                <strong>{{review[0]}}</strong> rated: {{review[1]}}/5<br>
-                <p>{{review[2]}}</p>
-                <small>{{review[3]}}</small>
-            </div>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class="flashes">
+        {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
         {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
 </body>
+<style>
+    .success { color: green; }
+    .error { color: red; }
+</style>
+</html>

@@ -98,7 +98,6 @@ def login():
     
     return render_template('login.html')
 
-
 @app.route('/home')
 def home():
 
@@ -352,43 +351,6 @@ def contactus():
     # Render template
     return render_template('contactus.html')
 
-    
-@app.route('/product/<int:commodityID>')
-def product_detail(commodityID):
-    custID=session.get('custID') #Fetch from session
-    conn=connect_to_db()
-    cursor=conn.cursor()
-    cursor.execute("SELECT name, price FROM commodity_store WHERE commodityID=:id",[commodityID])
-    product=cursor.fetchone()
-
-    #Fetch Reviews
-    cursor.execute("""SELECT m.memberName, r.rating, r.comment, TO_CHAR(r.reviewDate, 'YYYY-MM-DD') FROM REVIEW r JOIN customer c ON r.custID=c.custID JOIN member m ON c.custID = m.custID WHERE r.commodityID=:id ORDER BY r.reviewDate DESC""", [commodityID])
-    reviews=cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return render_template('product_detail.html', product=product, reviews=reviews)
-
-
-@app.route('/submit_review', methods=['POST'])
-def submit_review():
-
-    # Send back to login page
-    if 'custID' not in session:
-        return redirect('/')
-    
-    commodityID=request.form['commodityID']
-    custID=request.form['custID']
-    rating=request.form['rating']
-    comment=request.form['comment']
-    
-    submit_sql = '''
-    INSERT INTO Review(reviewID, commodityID, custID, rating, comment, reviewDate) 
-    VALUES (review_seq.NEXTVAL, :commodityID, :custID, :rating, :comment, SYSDATE)
-    '''
-     
-    insert_data(submit_sql, [(commodityID , custID, rating, comment)])
-
-    return render_template(f'/product/{commodityID}')
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
@@ -470,7 +432,114 @@ def recommend():
         dietary_options=dietary_options
     )
 
+@app.route('/review/<commodityName>', methods=['GET'])
+def write_review(commodityName):
+    product_sql = "SELECT commodityID, name FROM commodity_store WHERE name = :1"
+    try:
+        product_df = fetch_data(product_sql, [commodityName])
+        if not product_df.empty:
+            commodityID = product_df['COMMODITYID'].iloc[0]
+            product_name = product_df['NAME'].iloc[0]
+        else:
+            product_error = "Product not found."
+            return render_template('review.html', product_error=product_error)
 
+    except oracledb.Error as e:
+        error, = e.args
+        print(f"Database error fetching product: {error.message}")
+        product_error = "Error fetching product details."
+        return render_template('review.html', product_error=product_error)
+
+    # Fetch reviews using commodityID as usual
+    reviews_sql = """
+        SELECT a.username, r.rating, r.review, r.reviewDate
+        FROM Review r
+        JOIN Account a ON r.custID = a.email
+        WHERE r.commodityID = :1
+    """
+    reviews = []
+    try:
+        reviews_df = fetch_data(reviews_sql, [commodityID])
+        print("Fetched reviews:", reviews_df)
+        reviews = reviews_df.to_records(index=False).tolist() if not reviews_df.empty else []
+    except oracledb.Error as e:
+        error, = e.args
+        print(f"Database error fetching reviews: {error.message}")
+        flash("Error fetching existing reviews.", "error")
+
+    return render_template('review.html',
+                           product=(commodityID, product_name),
+                           reviews=reviews,
+                           product_error=None)
+
+import uuid
+@app.route('/submit_review', methods=['POST'])
+def submit_review():
+    print("Submit Review Endpoint Hit")
+
+    commodityName = request.form.get('commodityName')
+    rating = request.form.get('rating')
+    comment = request.form.get('comment')
+    custID = request.form.get('custID') or 'testuser@example.com'  # dummy user for now
+
+    print(f"Received data: commodityName={commodityName}, rating={rating}, comment={comment}")
+
+    if not (commodityName and rating and comment):
+        print("Review details are incomplete!")
+        flash("Please fill out all fields.", "error")
+        return redirect(url_for('write_review', commodityName=commodityName))
+
+    try:
+        rating = float(rating)
+        print(f"Converted rating: {rating}")
+    except ValueError:
+        print("Invalid rating value!")
+        flash("Invalid rating value.", "error")
+        return redirect(url_for('write_review', commodityName=commodityName))
+
+    # Fetch commodityID for the given commodityName
+    product_sql = "SELECT commodityID FROM commodity_store WHERE name = :1"
+    try:
+        product_df = fetch_data(product_sql, [commodityName])
+        if product_df.empty:
+            print("Product not found.")
+            flash("Product not found.", "error")
+            return redirect(url_for('write_review', commodityName=commodityName))
+        commodityID = product_df['COMMODITYID'].iloc[0]
+        print(f"Found commodityID: {commodityID}")
+    except oracledb.Error as e:
+        error, = e.args
+        print(f"Database error fetching commodityID: {error.message}")
+        flash("Error fetching product details.", "error")
+        return redirect(url_for('write_review', commodityName=commodityName))
+
+    # Get the next reviewID manually
+    get_max_id_sql = "SELECT NVL(MAX(reviewID), 0) FROM Review"
+    try:
+        max_id_df = fetch_data(get_max_id_sql)
+        new_reviewID = int(max_id_df.iloc[0, 0]) + 1
+        print(f"New reviewID: {new_reviewID}")
+    except oracledb.Error as e:
+        error, = e.args
+        print(f"Database error getting max reviewID: {error.message}")
+        flash("Error generating review ID.", "error")
+        return redirect(url_for('write_review', commodityName=commodityName))
+
+    # Insert the review
+    insert_review_sql = """
+        INSERT INTO Review (reviewID, commodityID, custID, rating, review, reviewDate)
+        VALUES (:1, :2, :3, :4, :5, SYSDATE)
+    """
+    try:
+        insert_data(insert_review_sql, [(new_reviewID, commodityID, custID, rating, comment)])
+        print("Review submitted successfully.")
+        flash("Review submitted successfully!", "success")
+    except oracledb.Error as e:
+        error, = e.args
+        print(f"Database error submitting review: {error.message}")
+        flash("Error submitting review.", "error")
+
+    return redirect(url_for('write_review', commodityName=commodityName))
 
 
 if __name__ == '__main__':

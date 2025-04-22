@@ -112,14 +112,17 @@
                             <td>{{ product[0] }}</td>  
                             <td>${{ product[1] | round(2) }}</td> 
                             <td>{{ product[2] | int }}</td>
-                            <td>
-                                <form method="POST" action="/add_to_cart">
+                            <td style="width: 350px;"> <!-- Control the width -->
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                  <form method="POST" action="/add_to_cart" style="display: flex; gap: 5px; align-items: center; margin: 0;">
                                     <input type="hidden" name="product_name" value="{{ product[0] }}">
-                                    <input type="hidden" name="price" value="{{ product[1] | round(2)}}">
-                                    <input type="number" name="quantity" value="1" min="1" max="{{ product[2] | int }}">
-                                    <button type="submit" class="btn btn-success">Add to Cart</button>
-                                </form>
-                            </td>
+                                    <input type="hidden" name="price" value="{{ product[1] | round(2) }}">
+                                    <input type="number" name="quantity" value="1" min="1" max="{{ product[2] | int }}" style="width: 60px;">
+                                    <button type="submit" class="btn btn-success btn-sm">Add To Cart</button>
+                                  </form>
+                                  <a href="{{ url_for('write_review', commodityName=product[0]) }}", class="btn btn-warning btn-sm">Write Review</a>
+                                </div>
+                              </td>
                         </tr>
                     {% else %}
                         <tr>
