@@ -110,7 +110,7 @@ CREATE TABLE Review(
   commodityID VARCHAR(10),
   custID VARCHAR(50),
   rating NUMBER NOT NULL,
-  comment CLOB, 
+  review CLOB, 
   reviewDate DATE,
   FOREIGN KEY (commodityID) REFERENCES commodity_store(commodityID),
   FOREIGN KEY (custID) REFERENCES member(custID)
