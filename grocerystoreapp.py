@@ -223,70 +223,57 @@ def shop():
     conn = connect_to_db()
     cursor = conn.cursor()
 
-    # Pull commodity data
-    data = cursor.execute("SELECT NAME, PRICE, QUANTITY FROM COMMODITY_STORE")
+    data = cursor.execute("SELECT COMMODITYID, NAME, PRICE, QUANTITY FROM COMMODITY_STORE")
 
-    # Get query from search bar
     search_query = request.args.get('search', '') 
 
-    # Initialize empty list
     filtered_data = []
 
-    # Filter commodity table based on search query
     if search_query:
         filtered_data = [row for row in data if search_query.lower().strip() in row[0].lower()]
-
-    # If not search then just return full table
     else:
         filtered_data = data
 
-    # Render template and pass data table
-    return render_template('Search.html', data=filtered_data)
+    return render_template('Search.html', data=filtered_data)  # Here, you're passing `filtered_data`
+
 
 
 @app.route('/go_to_shop')
 def go_to_shop():
-
-    # Render template
+    # This route will redirect the user to the shop page
     return redirect(url_for('shop'))
 
 
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
-
-    # Collect commodity details
     try:
+        product_id = request.form['commodityID']  # Make sure this field is in your form
         product_name = request.form['product_name']
         product_price = float(request.form['price'])
         product_quantity = int(request.form['quantity'])
 
-        # Retrieve the cart from the session
         cart = session.get('cart', [])
         
-        # Check if the product is already in the cart
         product_in_cart = False
         for item in cart:
-            if item['name'] == product_name:
-                item['quantity'] += product_quantity  # Update quantity
+            if item['commodityID'] == product_id:
+                item['quantity'] += product_quantity
                 product_in_cart = True
                 break
         
-        # Add if not in cart
         if not product_in_cart:
             cart.append({
+                'commodityID': product_id,
                 'name': product_name,
                 'price': product_price,
                 'quantity': product_quantity
             })
 
-        # Save session
         session['cart'] = cart
         session.modified = True
 
-        # Render template with saved cart
         return redirect(url_for('cart'))
 
-    # Error handling
     except KeyError as e:
         print(f"KeyError: Missing form data for {str(e)}")
         return "Missing data", 400
@@ -311,7 +298,6 @@ def remove_from_cart():
     # Refresh page
     return redirect(url_for('cart'))
 
-
 @app.route('/clear_cart', methods=['POST'])
 def clear_cart():
 
@@ -328,47 +314,104 @@ def cart():
     return render_template('Cart.html', cart=cart)
 
 
+@app.route('/signin', methods=['GET'])
+def signin():
+    
+    # Connect to db
+    conn = connect_to_db()
+    cursor = conn.cursor()
+
+    print('Hello!')
+
+    return render_template('SignIn.html')
+
+
+@app.route('/go_to_signin')
+def go_to_signin():
+    # This route will redirect the user to the signin page
+    return redirect(url_for('signin'))
+
 @app.route('/contactus', methods=['GET', 'POST'])
 def contactus():
-
-    # Collect submission
     if request.method=='POST':
         name=request.form['name']
         email=request.form['email']
         message=request.form['message']
-
-        # INSERT statement
-        contact_sql = '''
-        INSERT INTO contactus (name, email, message) 
-        VALUES(:1, :2, :3)
-        '''
-        # Execute 
-        insert_data(contact_sql, [(name , email, message)])
-        
-        # Return template
+        conn=connect_to_db()
+        cur=conn.cursor()
+        cur.execute("INSERT INTO contactus (name, email, message) VALUES(%s, %s, %s)", (name , email, message))
+        conn.commit()
+        cur.close()
         return render_template('thankyou.html')
-    
-    # Render template
     return render_template('contactus.html')
 
+<<<<<<< HEAD
+=======
+@app.route('/product/<int:commodityID>')
+def product_detail(commodityID):
+    custID=session.get('custID') #Fetch from session
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    cursor.execute("SELECT name, price FROM commodity_store WHERE commodityID=:id",[commodityID])
+    product=cursor.fetchone()
+
+    #Fetch Reviews
+    cursor.execute("""SELECT m.memberName, r.rating, r.comment, TO_CHAR(r.reviewDate, 'YYYY-MM-DD') FROM REVIEW r JOIN customer c ON r.custID=c.custID JOIN member m ON c.custID = m.custID WHERE r.commodityID=:id ORDER BY r.reviewDate DESC""", [commodityID])
+    reviews=cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('product_detail.html', product=product, reviews=reviews)
+
+@app.route('/submit_review', methods=['POST'])
+def submit_review():
+    if 'custID' not in session:
+        return redirect('/SignIn')
+    commodityID=request.form['commodityID']
+    custID=request.form['custID']
+    rating=request.form['rating']
+    comment=request.form['comment']
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    cursor.execute("""INSERT INTO Review(reviewID, commodityID, custID, rating, comment, reviewDate) VALUES (review_seq.NEXTVAL, :commodityID, :custID, :rating, :comment, SYSDATE)""", [commodityID , custID, rating, comment])
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return render_template(f'/product/{commodityID}')
+>>>>>>> 21fdc22d7cdf772523c436723d453293d8ba13c1
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     cart = session.get('cart', [])
-
+    conn=connect_to_db()
+    cursor=conn.cursor()
     if request.method == 'POST':
         # Collect form data
         name = request.form['name']
         address = request.form['address']
         card = request.form['card']
 
-        # Here you'd normally process payment and record the order
-        print(f"Order received from {name}, shipping to {address}, card ending in {card[-4:]}")
+        # Process each item in the cart: reduce quantity
+        for item in cart:
+            commodity_id = item['commodityID']  # Make sure this exists in your cart structure
+            quantity_ordered = item['quantity']
+
+            try:
+                cursor.execute("""
+                    UPDATE commodity_store
+                    SET quantity = quantity - :qty
+                    WHERE commodityID = :cid
+                """, {'qty': quantity_ordered, 'cid': commodity_id})
+            except Exception as e:
+                print(f"Error updating quantity for {commodity_id}: {e}")
+
+        conn.commit()  # Commit the update so the trigger fires
+        cursor.close()
 
         # Clear the cart
         session['cart'] = []
         session.modified = True
 
+        # Render thank you page
         return render_template('thankyou.html', name=name)
 
     return render_template('checkout.html', cart=cart)

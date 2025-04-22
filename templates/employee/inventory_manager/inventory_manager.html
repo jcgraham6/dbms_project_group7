@@ -140,12 +140,30 @@
     <h2 style="display: flex; justify-content: center;">Personal Information</h2>
     <div style="display: flex; justify-content: center;">
         <table border="1">
-            {% for key, value in personal_info.items() %}
             <tr>
-                <td><strong>{{ key }}</strong></td>
-                <td>{{ value }}</td>
+                <td><strong>{{ 'name' }}</strong></td>
+                <td>{{ personal_info['name'] }}</td>
             </tr>
-            {% endfor %}
+            <tr>
+                <td><strong>{{ 'ssn' }}</strong></td>
+                <td>{{ personal_info['ssn'] }}</td>
+            </tr>
+            <tr>
+                <td><strong>{{ 'birthday' }}</strong></td>
+                <td>{{ personal_info['birthday'] }}</td>
+            </tr>
+            <tr>
+                <td><strong>{{ 'position' }}</strong></td>
+                <td>{{ personal_info['position'] }}</td>
+            </tr>
+            <tr>
+                <td><strong>{{ 'inventory_id' }}</strong></td>
+                <td>{{ personal_info['inventory_id'] }}</td>
+            </tr>
+            <tr>
+                <td><strong>{{ 'salary' }}</strong></td>
+                <td>{{ personal_info['salary'] }}</td>
+            </tr>
         </table>
     </div>
 

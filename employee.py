@@ -167,10 +167,14 @@ def inventory_lookup():
     inventory_items = []
     cursor=conn.cursor()
     for iid in session['inventory_id']:
-        result = cursor.execute("select * from commodity_store where iid = :id", [iid])
+        result = cursor.execute("select A.commodityID, A.name, A.price, A.category, A.discount, A.expDate, A.quantity, A.threshold, A.iid, AVG(B.rating) \
+from commodity_store A left join Review B on A.commodityID = B.commodityID \
+where iid = :iid \
+group by A.commodityID, A.name, A.price, A.category, A.discount, A.expDate, A.quantity, A.threshold, A.iid", [iid])
         inventory_items = inventory_items + result.fetchall()
     cursor.close()
     conn.close()
+    print(inventory_items)
     return render_template('/employee/inventory_manager/inventory.html', items=inventory_items)
 
 @app.route('/employee/inventory_manager/alert.html', methods=['GET'])
@@ -286,6 +290,23 @@ ON C.commodityID = D.commodityID", [sid, sid])
     conn.close()
     print(shelf_alerts)
     return render_template('/employee/stock_clerk/shelf_alert.html', items=shelf_alerts)
+
+@app.route("/check_review", methods=['POST'])
+def check_review():
+    commodity_id = str(request.form.get('commodity_id'))
+    conn=connect_to_db()
+    cursor=conn.cursor()
+    result = cursor.execute("SELECT review FROM Review WHERE commodityID=:commodityID", [commodity_id])
+    print(commodity_id)
+    reviews = result.fetchall()
+    print(reviews)
+    cursor.close()
+    conn.close()
+    return render_template('/employee/inventory_manager/review.html', items=reviews)
+
+@app.route("/employee/return_inventory", methods=['GET'])
+def back_to_inventory():
+    return inventory_lookup()
 
 # @app.route("/employee/custodian/maintain.html", methods=['GET'])
 # def upload_maintenance():
